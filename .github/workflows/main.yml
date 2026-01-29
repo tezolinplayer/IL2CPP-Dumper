@@ -1,4 +1,4 @@
-name: Compilar Dumper Final
+name: Compilar Dumper Real
 
 on:
   workflow_dispatch:
@@ -10,26 +10,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Adicionar MSBuild ao PATH
+    - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Compilar
-      shell: pwsh
+    - name: Compilar Solucao Completa
       run: |
-        $projectFile = Get-ChildItem -Recurse -Include *.sln, *.vcxproj | Select-Object -First 1 -ExpandProperty FullName
-        if ($projectFile) {
-            Write-Host "Compilando: $projectFile"
-            # Forçando a saída para uma pasta fixa chamada 'Saida'
-            msbuild "$projectFile" /p:Configuration=Release /p:Platform=x64 /p:OutDir=D:\a\IL2CPP-Dumper\IL2CPP-Dumper\Saida\
-        } else {
-            Write-Error "Projeto não encontrado!"
-            exit 1
-        }
+        # Isso vai tentar compilar todos os projetos dentro da pasta, incluindo o EXE do dumper
+        msbuild IL2CPP-Dumper.sln /p:Configuration=Release /p:Platform=x64
 
-    - name: Upload do Executável
+    - name: Upload dos Binarios
       uses: actions/upload-artifact@v4
       with:
-        name: Dumper-Pronto
+        name: Ferramentas-Completas
         path: |
-          D:/a/IL2CPP-Dumper/IL2CPP-Dumper/Saida/*.exe
-          D:/a/IL2CPP-Dumper/IL2CPP-Dumper/Saida/*.dll
+          **/*.exe
+          **/*.dll
