@@ -1,0 +1,28 @@
+name: Compilar Dumper
+
+on:
+  workflow_dispatch: # Permite que você clique em um botão para iniciar
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Adicionar MSBuild ao PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Restaurar pacotes NuGet
+      run: nuget restore IL2CPP-Dumper.sln
+
+    - name: Compilar Solução (Release x64)
+      run: msbuild IL2CPP-Dumper.sln /p:Configuration=Release /p:Platform=x64
+
+    - name: Upload do Executável
+      uses: actions/upload-artifact@v4
+      with:
+        name: Dumper-Compilado
+        path: |
+          **/Release/*.exe
+          **/Release/*.dll
