@@ -1,13 +1,4 @@
-- name: Upload do Executável
-      uses: actions/upload-artifact@v4
-      with:
-        name: Dumper-Compilado
-        path: |
-          D:/a/IL2CPP-Dumper/IL2CPP-Dumper/**/*.exe
-          D:/a/IL2CPP-Dumper/IL2CPP-Dumper/**/*.dll
-          **/*.exe
-          **/*.dll
-name: Compilar Dumper
+name: Compilar Dumper Final
 
 on:
   workflow_dispatch:
@@ -22,28 +13,23 @@ jobs:
     - name: Adicionar MSBuild ao PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Listar Arquivos e Compilar
+    - name: Compilar
       shell: pwsh
       run: |
-        # 1. Listar arquivos para diagnóstico
-        Write-Host "--- Estrutura de Pastas ---"
-        Get-ChildItem -Recurse | Select-Object FullName
-        
-        # 2. Buscar o arquivo de projeto real
         $projectFile = Get-ChildItem -Recurse -Include *.sln, *.vcxproj | Select-Object -First 1 -ExpandProperty FullName
-        
         if ($projectFile) {
-            Write-Host "--- Arquivo Encontrado: $projectFile ---"
-            msbuild "$projectFile" /p:Configuration=Release /p:Platform=x64
+            Write-Host "Compilando: $projectFile"
+            # Forçando a saída para uma pasta fixa chamada 'Saida'
+            msbuild "$projectFile" /p:Configuration=Release /p:Platform=x64 /p:OutDir=D:\a\IL2CPP-Dumper\IL2CPP-Dumper\Saida\
         } else {
-            Write-Error "ERRO: Nenhum arquivo .sln ou .vcxproj encontrado no repositório!"
+            Write-Error "Projeto não encontrado!"
             exit 1
         }
 
     - name: Upload do Executável
       uses: actions/upload-artifact@v4
       with:
-        name: Dumper-Compilado
+        name: Dumper-Pronto
         path: |
-          **/*.exe
-          **/*.dll
+          D:/a/IL2CPP-Dumper/IL2CPP-Dumper/Saida/*.exe
+          D:/a/IL2CPP-Dumper/IL2CPP-Dumper/Saida/*.dll
