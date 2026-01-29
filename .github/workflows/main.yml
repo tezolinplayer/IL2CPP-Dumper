@@ -13,11 +13,14 @@ jobs:
     - name: Adicionar MSBuild ao PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Compilar Projeto (Release x64)
+    - name: Localizar e Compilar
       run: |
-        # Isso vai procurar qualquer arquivo .sln ou .vcxproj e compilar
-        msbuild Dump.vcxproj /p:Configuration=Release /p:Platform=x64
-      # Se o arquivo se chamar diferente de Dump.vcxproj, mude o nome acima
+        # Este comando procura qualquer arquivo .sln e compila. 
+        # Se não achar .sln, ele procura .vcxproj.
+        $projectFile = Get-ChildItem -Recurse -Include *.sln, *.vcxproj | Select-Object -First 1 -ExpandProperty FullName
+        if (-not $projectFile) { throw "Não encontrei nenhum arquivo de projeto!" }
+        Write-Host "Compilando: $projectFile"
+        msbuild "$projectFile" /p:Configuration=Release /p:Platform=x64
 
     - name: Upload do Executável
       uses: actions/upload-artifact@v4
@@ -26,3 +29,4 @@ jobs:
         path: |
           **/Release/*.exe
           **/Release/*.dll
+          **/bin/Release/*.exe
